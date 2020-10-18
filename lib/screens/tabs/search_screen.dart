@@ -1,125 +1,112 @@
+import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/style.dart';
-import 'package:hello_news_api_tut/bloc/get_source_bloc.dart';
-import 'package:hello_news_api_tut/bloc/get_source_news_bloc.dart';
-import 'package:hello_news_api_tut/bloc/get_top_headlines_bloc.dart';
+
+import 'package:hello_news_api_tut/screens/news_details.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:hello_news_api_tut/bloc/search_bloc.dart';
 import 'package:hello_news_api_tut/elements/error_element.dart';
 import 'package:hello_news_api_tut/elements/loading_element.dart';
 import 'package:hello_news_api_tut/model/article.dart';
 import 'package:hello_news_api_tut/model/article_response.dart';
-import 'package:hello_news_api_tut/model/source.dart';
 import 'package:hello_news_api_tut/style/theme.dart' as Style;
-import 'package:timeago/timeago.dart' as timeago;
 
-import 'news_details.dart';
-
-class SourceDetail extends StatefulWidget {
-  final SourceModel source;
-  SourceDetail({Key key, @required this.source}) : super(key: key);
+class SearchScreen extends StatefulWidget {
   @override
-  _SourceDetailState createState() => _SourceDetailState(source);
+  _SearchScreenState createState() => _SearchScreenState();
 }
 
-class _SourceDetailState extends State<SourceDetail> {
-  final SourceModel source;
-  _SourceDetailState(this.source);
-
+class _SearchScreenState extends State<SearchScreen> {
+  final _searchController = TextEditingController();
   @override
   void initState() {
-    getSourceNewsBloc.getSourceNews(source.id);
+    searchBloc..search("value");
     // TODO: implement initState
     super.initState();
   }
 
   @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    getSourceNewsBloc..drainstream();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(40.0),
-        child: AppBar(
-          backgroundColor: Style.Colors.mainColor,
-          title: Text(""),
-        ),
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.only(
-              left: 15.0,
-              right: 15.0,
-              bottom: 15.0,
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.all(10.0),
+          child: TextFormField(
+            style: TextStyle(
+              fontSize: 14.0,
+              color: Colors.black,
             ),
-            color: Style.Colors.mainColor,
-            width: MediaQuery.of(context).size.width,
-            child: Column(
-              children: [
-                Hero(
-                  tag: source.id,
-                  child: SizedBox(
-                    child: SizedBox(
-                      height: 80.0,
-                      width: 80.0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(width: 2.0, color: Colors.white),
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                                image: NetworkImage(
-                                    "https://1.bp.blogspot.com/-YBo2TSXxvvo/XdAmLi0noKI/AAAAAAAABGE/_pDiY6XEMIUwGqYU5RLWBwoU5FXLcBgbQCNcBGAsYHQ/s1600/shraddha-kapoor-hd-wallpaper.jpg"),
-                                fit: BoxFit.cover)),
+            controller: _searchController,
+            onChanged: (value) {
+              searchBloc.search(_searchController.text);
+            },
+            decoration: InputDecoration(
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                filled: true,
+                fillColor: Colors.grey[100],
+                suffix: _searchController.text.length > 0
+                    ? IconButton(
+                        icon: Icon(EvaIcons.backspaceOutline),
+                        onPressed: () {
+                          setState(() {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                            _searchController.clear();
+                            searchBloc..search(_searchController.text);
+                          });
+                        })
+                    : Icon(
+                        EvaIcons.searchOutline,
+                        color: Colors.grey[500],
+                        size: 16.0,
                       ),
-                    ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey[100].withOpacity(0.3),
                   ),
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
-                SizedBox(
-                  height: 5.0,
+                contentPadding: EdgeInsets.only(
+                  left: 15.0,
+                  right: 10.0,
                 ),
-                Text(
-                  source.name,
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.bold),
+                labelText: "Search...",
+                hintStyle: TextStyle(
+                  fontSize: 14.0,
+                  color: Style.Colors.grey,
+                  fontWeight: FontWeight.w500,
                 ),
-                SizedBox(
-                  height: 5.0,
-                ),
-              ],
-            ),
+                labelStyle: TextStyle(
+                    fontSize: 14.0,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold)),
+            autocorrect: false,
+            autovalidate: true,
           ),
-          Expanded(
-            child: StreamBuilder<ArticleRespone>(
-              stream: getTopHeadlineBloc.subject.stream,
-              builder: (BuildContext context,
-                  AsyncSnapshot<ArticleRespone> snapshot) {
-                if (snapshot.hasData) {
-                  if (snapshot.data.error != null &&
-                      snapshot.data.error.length > 0) {
-                    return buildErrorWidget(snapshot.data.error);
-                  }
-                  return _buildSourceNews(snapshot.data);
-                } else if (snapshot.hasError) {
+        ),
+        Expanded(
+          child: StreamBuilder<ArticleRespone>(
+            stream: searchBloc.subject.stream,
+            builder:
+                (BuildContext context, AsyncSnapshot<ArticleRespone> snapshot) {
+              if (snapshot.hasData) {
+                if (snapshot.data.error != null &&
+                    snapshot.data.error.length > 0) {
                   return buildErrorWidget(snapshot.data.error);
-                } else {
-                  return buildLoadingWidget();
-                  // return buildLoadingWidget();
                 }
-              },
-            ),
-          )
-        ],
-      ),
+                return _buildSearchNews(snapshot.data);
+              } else if (snapshot.hasError) {
+                return buildErrorWidget(snapshot.data.error);
+              } else {
+                return buildLoadingWidget();
+                // return buildLoadingWidget();
+              }
+            },
+          ),
+        )
+      ],
     );
   }
 
-  Widget _buildSourceNews(ArticleRespone data) {
+  Widget _buildSearchNews(ArticleRespone data) {
     List<ArticleModel> articles = data.articles;
     if (articles.length == 0) {
       return Container(
@@ -141,7 +128,7 @@ class _SourceDetailState extends State<SourceDetail> {
               decoration: BoxDecoration(
                   border: Border(
                       top: BorderSide(color: Colors.grey[200], width: 1.0)),
-                  color: Colors.grey),
+                  color: Colors.white),
               height: 150.0,
               child: Row(
                 children: [

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import 'package:hello_news_api_tut/bloc/bottom_navbar_bloc.dart';
 import 'package:hello_news_api_tut/screens/tabs/home_screen.dart';
+import 'package:hello_news_api_tut/screens/tabs/search_screen.dart';
+import 'package:hello_news_api_tut/screens/tabs/source_screen.dart';
 import 'package:hello_news_api_tut/style/theme.dart' as Style;
 
 class MainScreen extends StatefulWidget {
@@ -47,10 +49,10 @@ class _MainScreenState extends State<MainScreen> {
 
                 break;
               case NavBarItem.Sources:
-                return testScreen();
+                return SourceScreen();
                 break;
               case NavBarItem.Search:
-                return testScreen();
+                return SearchScreen();
                 break;
             }
           },

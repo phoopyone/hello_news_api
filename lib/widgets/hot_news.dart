@@ -5,6 +5,7 @@ import 'package:hello_news_api_tut/elements/error_element.dart';
 import 'package:hello_news_api_tut/elements/loading_element.dart';
 import 'package:hello_news_api_tut/model/article.dart';
 import 'package:hello_news_api_tut/model/article_response.dart';
+import 'package:hello_news_api_tut/screens/news_details.dart';
 import 'package:hello_news_api_tut/style/theme.dart' as Style;
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -64,7 +65,13 @@ class _HotNewsState extends State<HotNews> {
               padding:
                   EdgeInsets.only(right: 15, top: 10.0, left: 15, bottom: 10),
               child: GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return NewsDetail(
+                      article: articles[index],
+                    );
+                  }));
+                },
                 child: Container(
                   width: 220.0,
                   decoration: BoxDecoration(

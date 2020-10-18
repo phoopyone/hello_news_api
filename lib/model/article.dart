@@ -8,7 +8,7 @@ class ArticleModel {
   String url;
   String img;
   String date;
-  String content;
+  var content;
   ArticleModel(this.source, this.aurhor, this.title, this.description, this.url,
       this.img, this.date, this.content);
   ArticleModel.fromJson(Map<String, dynamic> json)
